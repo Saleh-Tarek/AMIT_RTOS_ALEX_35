@@ -1,0 +1,830 @@
+
+TMU_MRTOS.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000530  00000000  00000000  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .bss          0000001c  00800060  00800060  000005a4  2**0
+                  ALLOC
+  2 .stab         000006fc  00000000  00000000  000005a4  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  3 .stabstr      00000621  00000000  00000000  00000ca0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
+   4:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+   8:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+   c:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  10:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  14:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  18:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  1c:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  20:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  24:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  28:	0c 94 05 01 	jmp	0x20a	; 0x20a <__vector_10>
+  2c:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  30:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  34:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  38:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  3c:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  40:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  44:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  48:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  4c:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+  50:	0c 94 3c 00 	jmp	0x78	; 0x78 <__bad_interrupt>
+
+00000054 <__ctors_end>:
+  54:	11 24       	eor	r1, r1
+  56:	1f be       	out	0x3f, r1	; 63
+  58:	cf e5       	ldi	r28, 0x5F	; 95
+  5a:	d8 e0       	ldi	r29, 0x08	; 8
+  5c:	de bf       	out	0x3e, r29	; 62
+  5e:	cd bf       	out	0x3d, r28	; 61
+
+00000060 <__do_clear_bss>:
+  60:	10 e0       	ldi	r17, 0x00	; 0
+  62:	a0 e6       	ldi	r26, 0x60	; 96
+  64:	b0 e0       	ldi	r27, 0x00	; 0
+  66:	01 c0       	rjmp	.+2      	; 0x6a <.do_clear_bss_start>
+
+00000068 <.do_clear_bss_loop>:
+  68:	1d 92       	st	X+, r1
+
+0000006a <.do_clear_bss_start>:
+  6a:	ac 37       	cpi	r26, 0x7C	; 124
+  6c:	b1 07       	cpc	r27, r17
+  6e:	e1 f7       	brne	.-8      	; 0x68 <.do_clear_bss_loop>
+  70:	0e 94 c5 01 	call	0x38a	; 0x38a <main>
+  74:	0c 94 96 02 	jmp	0x52c	; 0x52c <_exit>
+
+00000078 <__bad_interrupt>:
+  78:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+0000007c <TMU_enInit>:
+ * 	First initialize timer0 in the normal compare match mode with 1024 prescaler [00001101].
+ *
+ * */
+
+ES_t TMU_enInit(void)
+{
+  7c:	0f 93       	push	r16
+  7e:	1f 93       	push	r17
+  80:	df 93       	push	r29
+  82:	cf 93       	push	r28
+  84:	00 d0       	rcall	.+0      	; 0x86 <TMU_enInit+0xa>
+  86:	0f 92       	push	r0
+  88:	cd b7       	in	r28, 0x3d	; 61
+  8a:	de b7       	in	r29, 0x3e	; 62
+	ES_t Local_enuErrorState = ES_NOK;
+  8c:	1b 82       	std	Y+3, r1	; 0x03
+	TCCR0= 0x0D;
+  8e:	e3 e5       	ldi	r30, 0x53	; 83
+  90:	f0 e0       	ldi	r31, 0x00	; 0
+  92:	8d e0       	ldi	r24, 0x0D	; 13
+  94:	80 83       	st	Z, r24
+	Local_enuErrorState=ES_OK;
+
+	/*What is the ticktime >16
+	 * calculate the greatest common factor*/
+#elif TICK_TIME > CTC_MAX_TIME
+	uint8_t iterator=0,Local_u8MaxGCF=0;
+  96:	1a 82       	std	Y+2, r1	; 0x02
+  98:	19 82       	std	Y+1, r1	; 0x01
+	for (iterator =1; iterator<= CTC_MAX_TIME; iterator++)
+  9a:	81 e0       	ldi	r24, 0x01	; 1
+  9c:	8a 83       	std	Y+2, r24	; 0x02
+  9e:	0f c0       	rjmp	.+30     	; 0xbe <TMU_enInit+0x42>
+	{
+		if(TICK_TIME % iterator ==0)
+  a0:	8a 81       	ldd	r24, Y+2	; 0x02
+  a2:	28 2f       	mov	r18, r24
+  a4:	30 e0       	ldi	r19, 0x00	; 0
+  a6:	84 e1       	ldi	r24, 0x14	; 20
+  a8:	90 e0       	ldi	r25, 0x00	; 0
+  aa:	b9 01       	movw	r22, r18
+  ac:	0e 94 4d 02 	call	0x49a	; 0x49a <__divmodhi4>
+  b0:	00 97       	sbiw	r24, 0x00	; 0
+  b2:	11 f4       	brne	.+4      	; 0xb8 <TMU_enInit+0x3c>
+		{
+			Local_u8MaxGCF = iterator;
+  b4:	8a 81       	ldd	r24, Y+2	; 0x02
+  b6:	89 83       	std	Y+1, r24	; 0x01
+
+	/*What is the ticktime >16
+	 * calculate the greatest common factor*/
+#elif TICK_TIME > CTC_MAX_TIME
+	uint8_t iterator=0,Local_u8MaxGCF=0;
+	for (iterator =1; iterator<= CTC_MAX_TIME; iterator++)
+  b8:	8a 81       	ldd	r24, Y+2	; 0x02
+  ba:	8f 5f       	subi	r24, 0xFF	; 255
+  bc:	8a 83       	std	Y+2, r24	; 0x02
+  be:	8a 81       	ldd	r24, Y+2	; 0x02
+  c0:	81 31       	cpi	r24, 0x11	; 17
+  c2:	70 f3       	brcs	.-36     	; 0xa0 <TMU_enInit+0x24>
+		{
+			Local_u8MaxGCF = iterator;
+		}
+	}
+	/*Timer calculation according to the greatest common factor*/
+	OCR0 = ((Local_u8MaxGCF * F_CPU)/(TIMER_PRESCALER*1000ul));
+  c4:	0c e5       	ldi	r16, 0x5C	; 92
+  c6:	10 e0       	ldi	r17, 0x00	; 0
+  c8:	89 81       	ldd	r24, Y+1	; 0x01
+  ca:	88 2f       	mov	r24, r24
+  cc:	90 e0       	ldi	r25, 0x00	; 0
+  ce:	a0 e0       	ldi	r26, 0x00	; 0
+  d0:	b0 e0       	ldi	r27, 0x00	; 0
+  d2:	20 e0       	ldi	r18, 0x00	; 0
+  d4:	34 e2       	ldi	r19, 0x24	; 36
+  d6:	44 ef       	ldi	r20, 0xF4	; 244
+  d8:	50 e0       	ldi	r21, 0x00	; 0
+  da:	bc 01       	movw	r22, r24
+  dc:	cd 01       	movw	r24, r26
+  de:	0e 94 2e 02 	call	0x45c	; 0x45c <__mulsi3>
+  e2:	dc 01       	movw	r26, r24
+  e4:	cb 01       	movw	r24, r22
+  e6:	20 e0       	ldi	r18, 0x00	; 0
+  e8:	30 ea       	ldi	r19, 0xA0	; 160
+  ea:	4f e0       	ldi	r20, 0x0F	; 15
+  ec:	50 e0       	ldi	r21, 0x00	; 0
+  ee:	bc 01       	movw	r22, r24
+  f0:	cd 01       	movw	r24, r26
+  f2:	0e 94 60 02 	call	0x4c0	; 0x4c0 <__udivmodsi4>
+  f6:	da 01       	movw	r26, r20
+  f8:	c9 01       	movw	r24, r18
+  fa:	f8 01       	movw	r30, r16
+  fc:	80 83       	st	Z, r24
+	/*Calculate how many time will enter the ISR*/
+	Global_u16NumberEnterISR = (TICK_TIME/Local_u8MaxGCF);
+  fe:	89 81       	ldd	r24, Y+1	; 0x01
+ 100:	28 2f       	mov	r18, r24
+ 102:	30 e0       	ldi	r19, 0x00	; 0
+ 104:	84 e1       	ldi	r24, 0x14	; 20
+ 106:	90 e0       	ldi	r25, 0x00	; 0
+ 108:	b9 01       	movw	r22, r18
+ 10a:	0e 94 4d 02 	call	0x49a	; 0x49a <__divmodhi4>
+ 10e:	cb 01       	movw	r24, r22
+ 110:	90 93 63 00 	sts	0x0063, r25
+ 114:	80 93 62 00 	sts	0x0062, r24
+	Global_u16CounterCTC=Global_u16NumberEnterISR;
+ 118:	80 91 62 00 	lds	r24, 0x0062
+ 11c:	90 91 63 00 	lds	r25, 0x0063
+ 120:	90 93 61 00 	sts	0x0061, r25
+ 124:	80 93 60 00 	sts	0x0060, r24
+	Local_enuErrorState=ES_OK;
+ 128:	81 e0       	ldi	r24, 0x01	; 1
+ 12a:	8b 83       	std	Y+3, r24	; 0x03
+
+#else
+#error "The entered TICK_TIME is not correct."
+#endif
+	return (Local_enuErrorState);
+ 12c:	8b 81       	ldd	r24, Y+3	; 0x03
+}
+ 12e:	0f 90       	pop	r0
+ 130:	0f 90       	pop	r0
+ 132:	0f 90       	pop	r0
+ 134:	cf 91       	pop	r28
+ 136:	df 91       	pop	r29
+ 138:	1f 91       	pop	r17
+ 13a:	0f 91       	pop	r16
+ 13c:	08 95       	ret
+
+0000013e <TMU_enCreateTask>:
+
+ES_t TMU_enCreateTask(void(*Copy_pfunTask)(void), uint8_t Copy_u8Priority, uint16_t Copy_u16Periodicity)
+{
+ 13e:	df 93       	push	r29
+ 140:	cf 93       	push	r28
+ 142:	00 d0       	rcall	.+0      	; 0x144 <TMU_enCreateTask+0x6>
+ 144:	00 d0       	rcall	.+0      	; 0x146 <TMU_enCreateTask+0x8>
+ 146:	00 d0       	rcall	.+0      	; 0x148 <TMU_enCreateTask+0xa>
+ 148:	cd b7       	in	r28, 0x3d	; 61
+ 14a:	de b7       	in	r29, 0x3e	; 62
+ 14c:	9b 83       	std	Y+3, r25	; 0x03
+ 14e:	8a 83       	std	Y+2, r24	; 0x02
+ 150:	6c 83       	std	Y+4, r22	; 0x04
+ 152:	5e 83       	std	Y+6, r21	; 0x06
+ 154:	4d 83       	std	Y+5, r20	; 0x05
+	ES_t Local_enuErrorState = ES_NOK;
+ 156:	19 82       	std	Y+1, r1	; 0x01
+/*Check that pointer is not Null*/
+	/*Need an array to contain the structure data, and the array's index will represent the task priority*/
+	if(Copy_pfunTask !=NULL)
+ 158:	8a 81       	ldd	r24, Y+2	; 0x02
+ 15a:	9b 81       	ldd	r25, Y+3	; 0x03
+ 15c:	00 97       	sbiw	r24, 0x00	; 0
+ 15e:	d1 f1       	breq	.+116    	; 0x1d4 <TMU_enCreateTask+0x96>
+	{
+		tasks[Copy_u8Priority].ptr= Copy_pfunTask;
+ 160:	8c 81       	ldd	r24, Y+4	; 0x04
+ 162:	28 2f       	mov	r18, r24
+ 164:	30 e0       	ldi	r19, 0x00	; 0
+ 166:	c9 01       	movw	r24, r18
+ 168:	88 0f       	add	r24, r24
+ 16a:	99 1f       	adc	r25, r25
+ 16c:	82 0f       	add	r24, r18
+ 16e:	93 1f       	adc	r25, r19
+ 170:	88 0f       	add	r24, r24
+ 172:	99 1f       	adc	r25, r25
+ 174:	fc 01       	movw	r30, r24
+ 176:	ec 59       	subi	r30, 0x9C	; 156
+ 178:	ff 4f       	sbci	r31, 0xFF	; 255
+ 17a:	8a 81       	ldd	r24, Y+2	; 0x02
+ 17c:	9b 81       	ldd	r25, Y+3	; 0x03
+ 17e:	91 83       	std	Z+1, r25	; 0x01
+ 180:	80 83       	st	Z, r24
+		tasks[Copy_u8Priority].periodicity= Copy_u16Periodicity;
+ 182:	8c 81       	ldd	r24, Y+4	; 0x04
+ 184:	28 2f       	mov	r18, r24
+ 186:	30 e0       	ldi	r19, 0x00	; 0
+ 188:	c9 01       	movw	r24, r18
+ 18a:	88 0f       	add	r24, r24
+ 18c:	99 1f       	adc	r25, r25
+ 18e:	82 0f       	add	r24, r18
+ 190:	93 1f       	adc	r25, r19
+ 192:	01 96       	adiw	r24, 0x01	; 1
+ 194:	88 0f       	add	r24, r24
+ 196:	99 1f       	adc	r25, r25
+ 198:	fc 01       	movw	r30, r24
+ 19a:	ec 59       	subi	r30, 0x9C	; 156
+ 19c:	ff 4f       	sbci	r31, 0xFF	; 255
+ 19e:	8d 81       	ldd	r24, Y+5	; 0x05
+ 1a0:	9e 81       	ldd	r25, Y+6	; 0x06
+ 1a2:	91 83       	std	Z+1, r25	; 0x01
+ 1a4:	80 83       	st	Z, r24
+		tasks[Copy_u8Priority].count= Copy_u16Periodicity-1; /*If the task starts that means it has count-1 to start again*/
+ 1a6:	8c 81       	ldd	r24, Y+4	; 0x04
+ 1a8:	28 2f       	mov	r18, r24
+ 1aa:	30 e0       	ldi	r19, 0x00	; 0
+ 1ac:	8d 81       	ldd	r24, Y+5	; 0x05
+ 1ae:	9e 81       	ldd	r25, Y+6	; 0x06
+ 1b0:	ac 01       	movw	r20, r24
+ 1b2:	41 50       	subi	r20, 0x01	; 1
+ 1b4:	50 40       	sbci	r21, 0x00	; 0
+ 1b6:	c9 01       	movw	r24, r18
+ 1b8:	88 0f       	add	r24, r24
+ 1ba:	99 1f       	adc	r25, r25
+ 1bc:	82 0f       	add	r24, r18
+ 1be:	93 1f       	adc	r25, r19
+ 1c0:	88 0f       	add	r24, r24
+ 1c2:	99 1f       	adc	r25, r25
+ 1c4:	fc 01       	movw	r30, r24
+ 1c6:	e8 59       	subi	r30, 0x98	; 152
+ 1c8:	ff 4f       	sbci	r31, 0xFF	; 255
+ 1ca:	51 83       	std	Z+1, r21	; 0x01
+ 1cc:	40 83       	st	Z, r20
+	/* Later will add more code*/
+		Local_enuErrorState=ES_OK;
+ 1ce:	81 e0       	ldi	r24, 0x01	; 1
+ 1d0:	89 83       	std	Y+1, r24	; 0x01
+ 1d2:	02 c0       	rjmp	.+4      	; 0x1d8 <TMU_enCreateTask+0x9a>
+	}
+	else
+	{
+		Local_enuErrorState= ES_NULL_POINTER;
+ 1d4:	83 e0       	ldi	r24, 0x03	; 3
+ 1d6:	89 83       	std	Y+1, r24	; 0x01
+	}
+	return (Local_enuErrorState);
+ 1d8:	89 81       	ldd	r24, Y+1	; 0x01
+}
+ 1da:	26 96       	adiw	r28, 0x06	; 6
+ 1dc:	0f b6       	in	r0, 0x3f	; 63
+ 1de:	f8 94       	cli
+ 1e0:	de bf       	out	0x3e, r29	; 62
+ 1e2:	0f be       	out	0x3f, r0	; 63
+ 1e4:	cd bf       	out	0x3d, r28	; 61
+ 1e6:	cf 91       	pop	r28
+ 1e8:	df 91       	pop	r29
+ 1ea:	08 95       	ret
+
+000001ec <TMU_enStartSchedular>:
+
+/*Here we need to enable the global interrupt and the timer zero compare match interrup*/
+
+ES_t TMU_enStartSchedular(void)
+{
+ 1ec:	df 93       	push	r29
+ 1ee:	cf 93       	push	r28
+ 1f0:	0f 92       	push	r0
+ 1f2:	cd b7       	in	r28, 0x3d	; 61
+ 1f4:	de b7       	in	r29, 0x3e	; 62
+	ES_t Local_enuErrorState = ES_NOK;
+ 1f6:	19 82       	std	Y+1, r1	; 0x01
+	/*TIMER0 CTC Interrupt enable*/
+	TIMSK |= (1<<1);
+ 1f8:	a9 e5       	ldi	r26, 0x59	; 89
+ 1fa:	b0 e0       	ldi	r27, 0x00	; 0
+ 1fc:	e9 e5       	ldi	r30, 0x59	; 89
+ 1fe:	f0 e0       	ldi	r31, 0x00	; 0
+ 200:	80 81       	ld	r24, Z
+ 202:	82 60       	ori	r24, 0x02	; 2
+ 204:	8c 93       	st	X, r24
+	/*Global Interrupt enable*/
+	asm("SEI");
+ 206:	78 94       	sei
+ 208:	ff cf       	rjmp	.-2      	; 0x208 <TMU_enStartSchedular+0x1c>
+
+0000020a <__vector_10>:
+
+/*ISR code *_- */
+
+void __vector_10(void)__attribute__((signal));
+void __vector_10(void)
+{
+ 20a:	1f 92       	push	r1
+ 20c:	0f 92       	push	r0
+ 20e:	0f b6       	in	r0, 0x3f	; 63
+ 210:	0f 92       	push	r0
+ 212:	11 24       	eor	r1, r1
+ 214:	2f 93       	push	r18
+ 216:	3f 93       	push	r19
+ 218:	4f 93       	push	r20
+ 21a:	5f 93       	push	r21
+ 21c:	6f 93       	push	r22
+ 21e:	7f 93       	push	r23
+ 220:	8f 93       	push	r24
+ 222:	9f 93       	push	r25
+ 224:	af 93       	push	r26
+ 226:	bf 93       	push	r27
+ 228:	ef 93       	push	r30
+ 22a:	ff 93       	push	r31
+ 22c:	df 93       	push	r29
+ 22e:	cf 93       	push	r28
+ 230:	0f 92       	push	r0
+ 232:	cd b7       	in	r28, 0x3d	; 61
+ 234:	de b7       	in	r29, 0x3e	; 62
+	uint8_t iterator;
+	Global_u16CounterCTC--;
+ 236:	80 91 60 00 	lds	r24, 0x0060
+ 23a:	90 91 61 00 	lds	r25, 0x0061
+ 23e:	01 97       	sbiw	r24, 0x01	; 1
+ 240:	90 93 61 00 	sts	0x0061, r25
+ 244:	80 93 60 00 	sts	0x0060, r24
+	/*if the counter reached 0 it means that it is time to run the task, once we inter the ISR we should
+	 * decrease the counter by one. */
+	if(Global_u16CounterCTC ==0)
+ 248:	80 91 60 00 	lds	r24, 0x0060
+ 24c:	90 91 61 00 	lds	r25, 0x0061
+ 250:	00 97       	sbiw	r24, 0x00	; 0
+ 252:	09 f0       	breq	.+2      	; 0x256 <__vector_10+0x4c>
+ 254:	86 c0       	rjmp	.+268    	; 0x362 <__vector_10+0x158>
+	{
+		/*Schedular code will check the priority as the array index*/
+
+		for (iterator=0; iterator < MAX_TASKS_NUMBER; iterator++)
+ 256:	19 82       	std	Y+1, r1	; 0x01
+ 258:	78 c0       	rjmp	.+240    	; 0x34a <__vector_10+0x140>
+		{
+			if(tasks[iterator].count==0 && tasks[iterator].ptr !=NULL)
+ 25a:	89 81       	ldd	r24, Y+1	; 0x01
+ 25c:	28 2f       	mov	r18, r24
+ 25e:	30 e0       	ldi	r19, 0x00	; 0
+ 260:	c9 01       	movw	r24, r18
+ 262:	88 0f       	add	r24, r24
+ 264:	99 1f       	adc	r25, r25
+ 266:	82 0f       	add	r24, r18
+ 268:	93 1f       	adc	r25, r19
+ 26a:	88 0f       	add	r24, r24
+ 26c:	99 1f       	adc	r25, r25
+ 26e:	fc 01       	movw	r30, r24
+ 270:	e8 59       	subi	r30, 0x98	; 152
+ 272:	ff 4f       	sbci	r31, 0xFF	; 255
+ 274:	80 81       	ld	r24, Z
+ 276:	91 81       	ldd	r25, Z+1	; 0x01
+ 278:	00 97       	sbiw	r24, 0x00	; 0
+ 27a:	09 f0       	breq	.+2      	; 0x27e <__vector_10+0x74>
+ 27c:	45 c0       	rjmp	.+138    	; 0x308 <__vector_10+0xfe>
+ 27e:	89 81       	ldd	r24, Y+1	; 0x01
+ 280:	28 2f       	mov	r18, r24
+ 282:	30 e0       	ldi	r19, 0x00	; 0
+ 284:	c9 01       	movw	r24, r18
+ 286:	88 0f       	add	r24, r24
+ 288:	99 1f       	adc	r25, r25
+ 28a:	82 0f       	add	r24, r18
+ 28c:	93 1f       	adc	r25, r19
+ 28e:	88 0f       	add	r24, r24
+ 290:	99 1f       	adc	r25, r25
+ 292:	fc 01       	movw	r30, r24
+ 294:	ec 59       	subi	r30, 0x9C	; 156
+ 296:	ff 4f       	sbci	r31, 0xFF	; 255
+ 298:	80 81       	ld	r24, Z
+ 29a:	91 81       	ldd	r25, Z+1	; 0x01
+ 29c:	00 97       	sbiw	r24, 0x00	; 0
+ 29e:	a1 f1       	breq	.+104    	; 0x308 <__vector_10+0xfe>
+			{
+				tasks[iterator].ptr(); /*Call the task a.k.a [function]*/
+ 2a0:	89 81       	ldd	r24, Y+1	; 0x01
+ 2a2:	28 2f       	mov	r18, r24
+ 2a4:	30 e0       	ldi	r19, 0x00	; 0
+ 2a6:	c9 01       	movw	r24, r18
+ 2a8:	88 0f       	add	r24, r24
+ 2aa:	99 1f       	adc	r25, r25
+ 2ac:	82 0f       	add	r24, r18
+ 2ae:	93 1f       	adc	r25, r19
+ 2b0:	88 0f       	add	r24, r24
+ 2b2:	99 1f       	adc	r25, r25
+ 2b4:	fc 01       	movw	r30, r24
+ 2b6:	ec 59       	subi	r30, 0x9C	; 156
+ 2b8:	ff 4f       	sbci	r31, 0xFF	; 255
+ 2ba:	01 90       	ld	r0, Z+
+ 2bc:	f0 81       	ld	r31, Z
+ 2be:	e0 2d       	mov	r30, r0
+ 2c0:	09 95       	icall
+				tasks[iterator].count = tasks[iterator].periodicity-1; /*after the task is called we need to decrement the counter by one*/
+ 2c2:	89 81       	ldd	r24, Y+1	; 0x01
+ 2c4:	48 2f       	mov	r20, r24
+ 2c6:	50 e0       	ldi	r21, 0x00	; 0
+ 2c8:	89 81       	ldd	r24, Y+1	; 0x01
+ 2ca:	28 2f       	mov	r18, r24
+ 2cc:	30 e0       	ldi	r19, 0x00	; 0
+ 2ce:	c9 01       	movw	r24, r18
+ 2d0:	88 0f       	add	r24, r24
+ 2d2:	99 1f       	adc	r25, r25
+ 2d4:	82 0f       	add	r24, r18
+ 2d6:	93 1f       	adc	r25, r19
+ 2d8:	01 96       	adiw	r24, 0x01	; 1
+ 2da:	88 0f       	add	r24, r24
+ 2dc:	99 1f       	adc	r25, r25
+ 2de:	fc 01       	movw	r30, r24
+ 2e0:	ec 59       	subi	r30, 0x9C	; 156
+ 2e2:	ff 4f       	sbci	r31, 0xFF	; 255
+ 2e4:	80 81       	ld	r24, Z
+ 2e6:	91 81       	ldd	r25, Z+1	; 0x01
+ 2e8:	9c 01       	movw	r18, r24
+ 2ea:	21 50       	subi	r18, 0x01	; 1
+ 2ec:	30 40       	sbci	r19, 0x00	; 0
+ 2ee:	ca 01       	movw	r24, r20
+ 2f0:	88 0f       	add	r24, r24
+ 2f2:	99 1f       	adc	r25, r25
+ 2f4:	84 0f       	add	r24, r20
+ 2f6:	95 1f       	adc	r25, r21
+ 2f8:	88 0f       	add	r24, r24
+ 2fa:	99 1f       	adc	r25, r25
+ 2fc:	fc 01       	movw	r30, r24
+ 2fe:	e8 59       	subi	r30, 0x98	; 152
+ 300:	ff 4f       	sbci	r31, 0xFF	; 255
+ 302:	31 83       	std	Z+1, r19	; 0x01
+ 304:	20 83       	st	Z, r18
+ 306:	1e c0       	rjmp	.+60     	; 0x344 <__vector_10+0x13a>
+				/*Need to check if the count reached 0, what is there is no task. pointer is null*/
+
+			}
+			else /*if the task count did not reach 0. means the task didnt reach the correct time to start again [periodicity]*/
+			{
+				tasks[iterator].count --;
+ 308:	89 81       	ldd	r24, Y+1	; 0x01
+ 30a:	28 2f       	mov	r18, r24
+ 30c:	30 e0       	ldi	r19, 0x00	; 0
+ 30e:	c9 01       	movw	r24, r18
+ 310:	88 0f       	add	r24, r24
+ 312:	99 1f       	adc	r25, r25
+ 314:	82 0f       	add	r24, r18
+ 316:	93 1f       	adc	r25, r19
+ 318:	88 0f       	add	r24, r24
+ 31a:	99 1f       	adc	r25, r25
+ 31c:	fc 01       	movw	r30, r24
+ 31e:	e8 59       	subi	r30, 0x98	; 152
+ 320:	ff 4f       	sbci	r31, 0xFF	; 255
+ 322:	80 81       	ld	r24, Z
+ 324:	91 81       	ldd	r25, Z+1	; 0x01
+ 326:	ac 01       	movw	r20, r24
+ 328:	41 50       	subi	r20, 0x01	; 1
+ 32a:	50 40       	sbci	r21, 0x00	; 0
+ 32c:	c9 01       	movw	r24, r18
+ 32e:	88 0f       	add	r24, r24
+ 330:	99 1f       	adc	r25, r25
+ 332:	82 0f       	add	r24, r18
+ 334:	93 1f       	adc	r25, r19
+ 336:	88 0f       	add	r24, r24
+ 338:	99 1f       	adc	r25, r25
+ 33a:	fc 01       	movw	r30, r24
+ 33c:	e8 59       	subi	r30, 0x98	; 152
+ 33e:	ff 4f       	sbci	r31, 0xFF	; 255
+ 340:	51 83       	std	Z+1, r21	; 0x01
+ 342:	40 83       	st	Z, r20
+	 * decrease the counter by one. */
+	if(Global_u16CounterCTC ==0)
+	{
+		/*Schedular code will check the priority as the array index*/
+
+		for (iterator=0; iterator < MAX_TASKS_NUMBER; iterator++)
+ 344:	89 81       	ldd	r24, Y+1	; 0x01
+ 346:	8f 5f       	subi	r24, 0xFF	; 255
+ 348:	89 83       	std	Y+1, r24	; 0x01
+ 34a:	89 81       	ldd	r24, Y+1	; 0x01
+ 34c:	84 30       	cpi	r24, 0x04	; 4
+ 34e:	08 f4       	brcc	.+2      	; 0x352 <__vector_10+0x148>
+ 350:	84 cf       	rjmp	.-248    	; 0x25a <__vector_10+0x50>
+			{
+				tasks[iterator].count --;
+			}
+		}
+		/*Now the task was started, need to return back the ctc counter to the ISR entering counter*/
+		Global_u16CounterCTC=Global_u16NumberEnterISR;
+ 352:	80 91 62 00 	lds	r24, 0x0062
+ 356:	90 91 63 00 	lds	r25, 0x0063
+ 35a:	90 93 61 00 	sts	0x0061, r25
+ 35e:	80 93 60 00 	sts	0x0060, r24
+	}
+}
+ 362:	0f 90       	pop	r0
+ 364:	cf 91       	pop	r28
+ 366:	df 91       	pop	r29
+ 368:	ff 91       	pop	r31
+ 36a:	ef 91       	pop	r30
+ 36c:	bf 91       	pop	r27
+ 36e:	af 91       	pop	r26
+ 370:	9f 91       	pop	r25
+ 372:	8f 91       	pop	r24
+ 374:	7f 91       	pop	r23
+ 376:	6f 91       	pop	r22
+ 378:	5f 91       	pop	r21
+ 37a:	4f 91       	pop	r20
+ 37c:	3f 91       	pop	r19
+ 37e:	2f 91       	pop	r18
+ 380:	0f 90       	pop	r0
+ 382:	0f be       	out	0x3f, r0	; 63
+ 384:	0f 90       	pop	r0
+ 386:	1f 90       	pop	r1
+ 388:	18 95       	reti
+
+0000038a <main>:
+void LED2(void);
+void LED3(void);
+void LED4(void);
+
+int main (void)
+{
+ 38a:	df 93       	push	r29
+ 38c:	cf 93       	push	r28
+ 38e:	cd b7       	in	r28, 0x3d	; 61
+ 390:	de b7       	in	r29, 0x3e	; 62
+	/*Direction of PORTA*/
+	DDRA= 0xff;
+ 392:	ea e3       	ldi	r30, 0x3A	; 58
+ 394:	f0 e0       	ldi	r31, 0x00	; 0
+ 396:	8f ef       	ldi	r24, 0xFF	; 255
+ 398:	80 83       	st	Z, r24
+	TMU_enInit();
+ 39a:	0e 94 3e 00 	call	0x7c	; 0x7c <TMU_enInit>
+	/*The task periodicity will be multiplied by the ticktime*/
+	TMU_enCreateTask(LED1,0,10);
+ 39e:	82 ef       	ldi	r24, 0xF2	; 242
+ 3a0:	91 e0       	ldi	r25, 0x01	; 1
+ 3a2:	60 e0       	ldi	r22, 0x00	; 0
+ 3a4:	4a e0       	ldi	r20, 0x0A	; 10
+ 3a6:	50 e0       	ldi	r21, 0x00	; 0
+ 3a8:	0e 94 9f 00 	call	0x13e	; 0x13e <TMU_enCreateTask>
+	TMU_enCreateTask(LED2,1,15);
+ 3ac:	81 e0       	ldi	r24, 0x01	; 1
+ 3ae:	92 e0       	ldi	r25, 0x02	; 2
+ 3b0:	61 e0       	ldi	r22, 0x01	; 1
+ 3b2:	4f e0       	ldi	r20, 0x0F	; 15
+ 3b4:	50 e0       	ldi	r21, 0x00	; 0
+ 3b6:	0e 94 9f 00 	call	0x13e	; 0x13e <TMU_enCreateTask>
+	TMU_enCreateTask(LED3,2,20);
+ 3ba:	80 e1       	ldi	r24, 0x10	; 16
+ 3bc:	92 e0       	ldi	r25, 0x02	; 2
+ 3be:	62 e0       	ldi	r22, 0x02	; 2
+ 3c0:	44 e1       	ldi	r20, 0x14	; 20
+ 3c2:	50 e0       	ldi	r21, 0x00	; 0
+ 3c4:	0e 94 9f 00 	call	0x13e	; 0x13e <TMU_enCreateTask>
+	TMU_enCreateTask(LED4,3,25);
+ 3c8:	8f e1       	ldi	r24, 0x1F	; 31
+ 3ca:	92 e0       	ldi	r25, 0x02	; 2
+ 3cc:	63 e0       	ldi	r22, 0x03	; 3
+ 3ce:	49 e1       	ldi	r20, 0x19	; 25
+ 3d0:	50 e0       	ldi	r21, 0x00	; 0
+ 3d2:	0e 94 9f 00 	call	0x13e	; 0x13e <TMU_enCreateTask>
+	TMU_enStartSchedular();
+ 3d6:	0e 94 f6 00 	call	0x1ec	; 0x1ec <TMU_enStartSchedular>
+ 3da:	80 e0       	ldi	r24, 0x00	; 0
+ 3dc:	90 e0       	ldi	r25, 0x00	; 0
+}
+ 3de:	cf 91       	pop	r28
+ 3e0:	df 91       	pop	r29
+ 3e2:	08 95       	ret
+
+000003e4 <LED1>:
+
+/*toggle the led*/
+void LED1(void)
+{
+ 3e4:	df 93       	push	r29
+ 3e6:	cf 93       	push	r28
+ 3e8:	cd b7       	in	r28, 0x3d	; 61
+ 3ea:	de b7       	in	r29, 0x3e	; 62
+PORTA^=(1<<1);
+ 3ec:	ab e3       	ldi	r26, 0x3B	; 59
+ 3ee:	b0 e0       	ldi	r27, 0x00	; 0
+ 3f0:	eb e3       	ldi	r30, 0x3B	; 59
+ 3f2:	f0 e0       	ldi	r31, 0x00	; 0
+ 3f4:	90 81       	ld	r25, Z
+ 3f6:	82 e0       	ldi	r24, 0x02	; 2
+ 3f8:	89 27       	eor	r24, r25
+ 3fa:	8c 93       	st	X, r24
+}
+ 3fc:	cf 91       	pop	r28
+ 3fe:	df 91       	pop	r29
+ 400:	08 95       	ret
+
+00000402 <LED2>:
+void LED2(void)
+{
+ 402:	df 93       	push	r29
+ 404:	cf 93       	push	r28
+ 406:	cd b7       	in	r28, 0x3d	; 61
+ 408:	de b7       	in	r29, 0x3e	; 62
+	PORTA^=(1<<2);
+ 40a:	ab e3       	ldi	r26, 0x3B	; 59
+ 40c:	b0 e0       	ldi	r27, 0x00	; 0
+ 40e:	eb e3       	ldi	r30, 0x3B	; 59
+ 410:	f0 e0       	ldi	r31, 0x00	; 0
+ 412:	90 81       	ld	r25, Z
+ 414:	84 e0       	ldi	r24, 0x04	; 4
+ 416:	89 27       	eor	r24, r25
+ 418:	8c 93       	st	X, r24
+}
+ 41a:	cf 91       	pop	r28
+ 41c:	df 91       	pop	r29
+ 41e:	08 95       	ret
+
+00000420 <LED3>:
+void LED3(void)
+{
+ 420:	df 93       	push	r29
+ 422:	cf 93       	push	r28
+ 424:	cd b7       	in	r28, 0x3d	; 61
+ 426:	de b7       	in	r29, 0x3e	; 62
+	PORTA^=(1<<3);
+ 428:	ab e3       	ldi	r26, 0x3B	; 59
+ 42a:	b0 e0       	ldi	r27, 0x00	; 0
+ 42c:	eb e3       	ldi	r30, 0x3B	; 59
+ 42e:	f0 e0       	ldi	r31, 0x00	; 0
+ 430:	90 81       	ld	r25, Z
+ 432:	88 e0       	ldi	r24, 0x08	; 8
+ 434:	89 27       	eor	r24, r25
+ 436:	8c 93       	st	X, r24
+}
+ 438:	cf 91       	pop	r28
+ 43a:	df 91       	pop	r29
+ 43c:	08 95       	ret
+
+0000043e <LED4>:
+void LED4(void)
+{
+ 43e:	df 93       	push	r29
+ 440:	cf 93       	push	r28
+ 442:	cd b7       	in	r28, 0x3d	; 61
+ 444:	de b7       	in	r29, 0x3e	; 62
+	PORTA^=(1<<4);
+ 446:	ab e3       	ldi	r26, 0x3B	; 59
+ 448:	b0 e0       	ldi	r27, 0x00	; 0
+ 44a:	eb e3       	ldi	r30, 0x3B	; 59
+ 44c:	f0 e0       	ldi	r31, 0x00	; 0
+ 44e:	90 81       	ld	r25, Z
+ 450:	80 e1       	ldi	r24, 0x10	; 16
+ 452:	89 27       	eor	r24, r25
+ 454:	8c 93       	st	X, r24
+}
+ 456:	cf 91       	pop	r28
+ 458:	df 91       	pop	r29
+ 45a:	08 95       	ret
+
+0000045c <__mulsi3>:
+ 45c:	62 9f       	mul	r22, r18
+ 45e:	d0 01       	movw	r26, r0
+ 460:	73 9f       	mul	r23, r19
+ 462:	f0 01       	movw	r30, r0
+ 464:	82 9f       	mul	r24, r18
+ 466:	e0 0d       	add	r30, r0
+ 468:	f1 1d       	adc	r31, r1
+ 46a:	64 9f       	mul	r22, r20
+ 46c:	e0 0d       	add	r30, r0
+ 46e:	f1 1d       	adc	r31, r1
+ 470:	92 9f       	mul	r25, r18
+ 472:	f0 0d       	add	r31, r0
+ 474:	83 9f       	mul	r24, r19
+ 476:	f0 0d       	add	r31, r0
+ 478:	74 9f       	mul	r23, r20
+ 47a:	f0 0d       	add	r31, r0
+ 47c:	65 9f       	mul	r22, r21
+ 47e:	f0 0d       	add	r31, r0
+ 480:	99 27       	eor	r25, r25
+ 482:	72 9f       	mul	r23, r18
+ 484:	b0 0d       	add	r27, r0
+ 486:	e1 1d       	adc	r30, r1
+ 488:	f9 1f       	adc	r31, r25
+ 48a:	63 9f       	mul	r22, r19
+ 48c:	b0 0d       	add	r27, r0
+ 48e:	e1 1d       	adc	r30, r1
+ 490:	f9 1f       	adc	r31, r25
+ 492:	bd 01       	movw	r22, r26
+ 494:	cf 01       	movw	r24, r30
+ 496:	11 24       	eor	r1, r1
+ 498:	08 95       	ret
+
+0000049a <__divmodhi4>:
+ 49a:	97 fb       	bst	r25, 7
+ 49c:	09 2e       	mov	r0, r25
+ 49e:	07 26       	eor	r0, r23
+ 4a0:	0a d0       	rcall	.+20     	; 0x4b6 <__divmodhi4_neg1>
+ 4a2:	77 fd       	sbrc	r23, 7
+ 4a4:	04 d0       	rcall	.+8      	; 0x4ae <__divmodhi4_neg2>
+ 4a6:	2e d0       	rcall	.+92     	; 0x504 <__udivmodhi4>
+ 4a8:	06 d0       	rcall	.+12     	; 0x4b6 <__divmodhi4_neg1>
+ 4aa:	00 20       	and	r0, r0
+ 4ac:	1a f4       	brpl	.+6      	; 0x4b4 <__divmodhi4_exit>
+
+000004ae <__divmodhi4_neg2>:
+ 4ae:	70 95       	com	r23
+ 4b0:	61 95       	neg	r22
+ 4b2:	7f 4f       	sbci	r23, 0xFF	; 255
+
+000004b4 <__divmodhi4_exit>:
+ 4b4:	08 95       	ret
+
+000004b6 <__divmodhi4_neg1>:
+ 4b6:	f6 f7       	brtc	.-4      	; 0x4b4 <__divmodhi4_exit>
+ 4b8:	90 95       	com	r25
+ 4ba:	81 95       	neg	r24
+ 4bc:	9f 4f       	sbci	r25, 0xFF	; 255
+ 4be:	08 95       	ret
+
+000004c0 <__udivmodsi4>:
+ 4c0:	a1 e2       	ldi	r26, 0x21	; 33
+ 4c2:	1a 2e       	mov	r1, r26
+ 4c4:	aa 1b       	sub	r26, r26
+ 4c6:	bb 1b       	sub	r27, r27
+ 4c8:	fd 01       	movw	r30, r26
+ 4ca:	0d c0       	rjmp	.+26     	; 0x4e6 <__udivmodsi4_ep>
+
+000004cc <__udivmodsi4_loop>:
+ 4cc:	aa 1f       	adc	r26, r26
+ 4ce:	bb 1f       	adc	r27, r27
+ 4d0:	ee 1f       	adc	r30, r30
+ 4d2:	ff 1f       	adc	r31, r31
+ 4d4:	a2 17       	cp	r26, r18
+ 4d6:	b3 07       	cpc	r27, r19
+ 4d8:	e4 07       	cpc	r30, r20
+ 4da:	f5 07       	cpc	r31, r21
+ 4dc:	20 f0       	brcs	.+8      	; 0x4e6 <__udivmodsi4_ep>
+ 4de:	a2 1b       	sub	r26, r18
+ 4e0:	b3 0b       	sbc	r27, r19
+ 4e2:	e4 0b       	sbc	r30, r20
+ 4e4:	f5 0b       	sbc	r31, r21
+
+000004e6 <__udivmodsi4_ep>:
+ 4e6:	66 1f       	adc	r22, r22
+ 4e8:	77 1f       	adc	r23, r23
+ 4ea:	88 1f       	adc	r24, r24
+ 4ec:	99 1f       	adc	r25, r25
+ 4ee:	1a 94       	dec	r1
+ 4f0:	69 f7       	brne	.-38     	; 0x4cc <__udivmodsi4_loop>
+ 4f2:	60 95       	com	r22
+ 4f4:	70 95       	com	r23
+ 4f6:	80 95       	com	r24
+ 4f8:	90 95       	com	r25
+ 4fa:	9b 01       	movw	r18, r22
+ 4fc:	ac 01       	movw	r20, r24
+ 4fe:	bd 01       	movw	r22, r26
+ 500:	cf 01       	movw	r24, r30
+ 502:	08 95       	ret
+
+00000504 <__udivmodhi4>:
+ 504:	aa 1b       	sub	r26, r26
+ 506:	bb 1b       	sub	r27, r27
+ 508:	51 e1       	ldi	r21, 0x11	; 17
+ 50a:	07 c0       	rjmp	.+14     	; 0x51a <__udivmodhi4_ep>
+
+0000050c <__udivmodhi4_loop>:
+ 50c:	aa 1f       	adc	r26, r26
+ 50e:	bb 1f       	adc	r27, r27
+ 510:	a6 17       	cp	r26, r22
+ 512:	b7 07       	cpc	r27, r23
+ 514:	10 f0       	brcs	.+4      	; 0x51a <__udivmodhi4_ep>
+ 516:	a6 1b       	sub	r26, r22
+ 518:	b7 0b       	sbc	r27, r23
+
+0000051a <__udivmodhi4_ep>:
+ 51a:	88 1f       	adc	r24, r24
+ 51c:	99 1f       	adc	r25, r25
+ 51e:	5a 95       	dec	r21
+ 520:	a9 f7       	brne	.-22     	; 0x50c <__udivmodhi4_loop>
+ 522:	80 95       	com	r24
+ 524:	90 95       	com	r25
+ 526:	bc 01       	movw	r22, r24
+ 528:	cd 01       	movw	r24, r26
+ 52a:	08 95       	ret
+
+0000052c <_exit>:
+ 52c:	f8 94       	cli
+
+0000052e <__stop_program>:
+ 52e:	ff cf       	rjmp	.-2      	; 0x52e <__stop_program>
